@@ -13,5 +13,5 @@ class GLES3Renderer : RendererInterface {
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }
 
-    override fun getRendererLibrary(): String = "egl_wrapper.so"
+    override fun getRendererLibrary(): String = "libegl_wrapper.so"
 }
