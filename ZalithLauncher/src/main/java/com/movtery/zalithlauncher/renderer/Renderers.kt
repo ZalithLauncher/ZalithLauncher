@@ -7,6 +7,7 @@ import com.movtery.zalithlauncher.renderer.renderers.GL4ESRenderer
 import com.movtery.zalithlauncher.renderer.renderers.PanfrostRenderer
 import com.movtery.zalithlauncher.renderer.renderers.VirGLRenderer
 import com.movtery.zalithlauncher.renderer.renderers.VulkanZinkRenderer
+import com.movtery.zalithlauncher.renderer.renderers.GLES3Renderer
 import net.kdt.pojavlaunch.Architecture
 import net.kdt.pojavlaunch.Tools
 
