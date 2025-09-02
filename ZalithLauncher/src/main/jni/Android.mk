@@ -99,7 +99,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := glesbridge
 LOCAL_LDLIBS := -ldl
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_SRC_FILES := gles_bridge.c
+LOCAL_SRC_FILES := egl_bridge.c
 include $(BUILD_SHARED_LIBRARY)
 
 
