@@ -195,6 +195,7 @@ EXTERNAL_API void pojavSetWindowHint(int hint, int value) {
             /* Nothing to do: initialization is handled in Java-side */
             // pojavInitVulkan();
             break;
+        case GLFW_OPENGL_ES_API:
         case GLFW_OPENGL_API:
             /* Nothing to do: initialization is called in pojavCreateContext */
             // pojavInitOpenGL();
