@@ -7,7 +7,6 @@ on:
 
 jobs:
   BuildRelease:
-    if: github.repository_owner == 'ZalithLauncher' && !startsWith(github.ref, 'refs/pull/') && github.ref_name == 'main'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
