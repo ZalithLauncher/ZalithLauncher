@@ -31,6 +31,7 @@ object Renderers {
 
         addRenderers(
             GL4ESRenderer(),
+            GLES3Renderer(),
             VulkanZinkRenderer(),
             VirGLRenderer(),
             FreedrenoRenderer(),
