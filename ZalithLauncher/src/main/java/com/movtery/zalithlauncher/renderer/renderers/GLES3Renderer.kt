@@ -13,5 +13,5 @@ class GL4ESRenderer : RendererInterface {
 
     override fun getDlopenLibrary(): Lazy<List<String>> = lazy { emptyList() }
 
-    override fun getRendererLibrary(): String = "libEGL.so"
+    override fun getRendererLibrary(): String = "egl_wrapper.so"
 }
