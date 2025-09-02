@@ -251,7 +251,7 @@ public final class JREUtils {
         envMap.put("POJAV_RENDERER", rendererId);
         if(rendererId.equals("GLES3")) {
 				envMap.put("LIBGL_ES", "3");
-				envMap.put("POJAVEXEC_EGL", "egl_wrapper.so"); // Use system EGL
+				envMap.put("POJAVEXEC_EGL", "libegl_wrapper.so"); // Use system EGL
 			}
 
         if (RendererPluginManager.getSelectedRendererPlugin() != null) return;
