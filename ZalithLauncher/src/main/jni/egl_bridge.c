@@ -36,6 +36,7 @@
 /* Consider GLFW_NO_API as Vulkan API */
 #define GLFW_NO_API 0
 #define GLFW_OPENGL_API 0x30001
+#define GLFW_OPENGL_ES_API 0x30002
 
 // This means that the function is an external API and that it will be used
 #define EXTERNAL_API __attribute__((used))
@@ -196,6 +197,7 @@ EXTERNAL_API void pojavSetWindowHint(int hint, int value) {
             /* Nothing to do: initialization is handled in Java-side */
             // pojavInitVulkan();
             break;
+        case GLFW_OPENGL_ES_API:
         case GLFW_OPENGL_API:
             /* Nothing to do: initialization is called in pojavCreateContext */
             // pojavInitOpenGL();

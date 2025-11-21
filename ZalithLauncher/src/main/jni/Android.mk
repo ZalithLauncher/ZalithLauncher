@@ -94,6 +94,16 @@ LOCAL_SHARED_LIBRARIES := awt_headless
 LOCAL_SRC_FILES := xawt_fake.c
 include $(BUILD_SHARED_LIBRARY)
 
+# EGLBridge library, used for compatibility with pure ES contexts
+include $(CLEAR_VARS)
+LOCAL_PATH := $(HERE_PATH)/eglwrap
+LOCAL_MODULE := egl_wrapper
+LOCAL_LDLIBS := -ldl -lEGL
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)
+LOCAL_SRC_FILES := egl_wrapper.c
+include $(BUILD_SHARED_LIBRARY)
+
+
 
 # delete fake libs after linked
 $(info $(shell (rm $(HERE_PATH)/../jniLibs/*/libawt_headless.so)))
