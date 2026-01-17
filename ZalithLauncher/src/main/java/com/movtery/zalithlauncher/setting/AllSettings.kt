@@ -51,6 +51,9 @@ class AllSettings {
         val disableDoubleTap = BooleanSettingUnit("disableDoubleTap", false)
 
         @JvmStatic
+        val forceGuiInput = BooleanSettingUnit("forceGuiInput", false)
+
+        @JvmStatic
         val timeLongPressTrigger = IntSettingUnit("timeLongPressTrigger", 300)
 
         @JvmStatic
