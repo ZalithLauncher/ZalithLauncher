@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Build;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.system.OsConstants;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.widget.Toast;
@@ -61,6 +62,15 @@ import javax.microedition.khronos.egl.EGLDisplay;
 
 public final class JREUtils {
     private JREUtils() {}
+
+    private static final String[] LIBC_PATHS_64 = new String[]{
+            "/apex/com.android.runtime/lib64/bionic/libc.so",
+            "/system/lib64/libc.so"
+    };
+    private static final String[] LIBC_PATHS_32 = new String[]{
+            "/apex/com.android.runtime/lib/bionic/libc.so",
+            "/system/lib/libc.so"
+    };
 
     public static String LD_LIBRARY_PATH;
     public static String jvmLibraryPath;
@@ -198,8 +208,63 @@ public final class JREUtils {
         if (runtimeModDir != null) {
             ldLibraryPath.append(runtimeModDir.getAbsolutePath()).append(":");
         }
+        String linkerCompatDir = ensureAndroidLinkerCompatibilityDir();
+        if (linkerCompatDir != null) {
+            ldLibraryPath.append(linkerCompatDir).append(":");
+        }
         ldLibraryPath.append(DIR_NATIVE_LIB);
         LD_LIBRARY_PATH = ldLibraryPath.toString();
+    }
+
+    private static String ensureAndroidLinkerCompatibilityDir() {
+        File compatDir = PathManager.DIR_LINKER_COMPAT;
+        if (!FileUtils.ensureDirectorySilently(compatDir)) {
+            Logging.w("LinkerCompat", "Unable to create compatibility directory: " + compatDir);
+            return null;
+        }
+
+        String libcPath = getAndroidLibcPath();
+        if (libcPath == null) {
+            Logging.w("LinkerCompat", "Unable to locate Android libc, skipping linker compatibility shim");
+            return null;
+        }
+
+        if (!ensureSymlink(new File(compatDir, "libpthread.so.0"), libcPath)) {
+            return null;
+        }
+
+        return compatDir.getAbsolutePath();
+    }
+
+    private static String getAndroidLibcPath() {
+        String[] candidates = is64BitsDevice() ? LIBC_PATHS_64 : LIBC_PATHS_32;
+        for (String candidate : candidates) {
+            if (new File(candidate).exists()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static boolean ensureSymlink(File linkFile, String targetPath) {
+        try {
+            if (linkFile.exists()) {
+                if (OsConstants.S_ISLNK(Os.lstat(linkFile.getAbsolutePath()).st_mode) &&
+                        targetPath.equals(Os.readlink(linkFile.getAbsolutePath()))) {
+                    return true;
+                }
+                if (!linkFile.delete()) {
+                    Logging.w("LinkerCompat", "Unable to replace existing compatibility entry: " + linkFile);
+                    return false;
+                }
+            }
+            Os.symlink(targetPath, linkFile.getAbsolutePath());
+            Logging.i("LinkerCompat", "Created compatibility symlink " + linkFile + " -> " + targetPath);
+            return true;
+        } catch (ErrnoException e) {
+            Logging.w("LinkerCompat", "Failed to create compatibility symlink for " + linkFile, e);
+        }
+        return false;
     }
 
     private static void initLdLibraryPath(String jreHome) {
@@ -217,6 +282,7 @@ public final class JREUtils {
         envMap.put("HOME", PathManager.DIR_GAME_HOME);
         envMap.put("TMPDIR", PathManager.DIR_CACHE.getAbsolutePath());
         envMap.put("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
+        envMap.put("ZALITH_LINKER_COMPAT_DIR", PathManager.DIR_LINKER_COMPAT.getAbsolutePath());
         envMap.put("PATH", jreHome + "/bin:" + Os.getenv("PATH"));
         envMap.put("FORCE_VSYNC", String.valueOf(AllSettings.getForceVsync().getValue()));
         envMap.put("AWTSTUB_WIDTH", Integer.toString(CallbackBridge.windowWidth > 0 ? CallbackBridge.windowWidth : CallbackBridge.physicalWidth));

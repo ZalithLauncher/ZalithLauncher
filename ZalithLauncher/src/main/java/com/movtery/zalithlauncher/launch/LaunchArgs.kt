@@ -66,11 +66,16 @@ class LaunchArgs(
         argsList.add("-Dlog4j.configurationFile=${configFilePath.absolutePath}")
 
         val versionSpecificNativesDir = File(PathManager.DIR_CACHE, "natives/${minecraftVersion.getVersionName()}")
-        if (versionSpecificNativesDir.exists()) {
-            val dirPath = versionSpecificNativesDir.absolutePath
-            argsList.add("-Djava.library.path=$dirPath:${PathManager.DIR_NATIVE_LIB}")
-            argsList.add("-Djna.boot.library.path=$dirPath")
-        }
+        val javaLibraryPath = buildList {
+            if (versionSpecificNativesDir.exists()) {
+                add(versionSpecificNativesDir.absolutePath)
+            }
+            add(PathManager.DIR_LINKER_COMPAT.absolutePath)
+            add(PathManager.DIR_NATIVE_LIB)
+        }.joinToString(":")
+
+        argsList.add("-Djava.library.path=$javaLibraryPath")
+        argsList.add("-Djna.boot.library.path=${PathManager.DIR_LINKER_COMPAT.absolutePath}:${PathManager.DIR_NATIVE_LIB}")
 
         return argsList
     }

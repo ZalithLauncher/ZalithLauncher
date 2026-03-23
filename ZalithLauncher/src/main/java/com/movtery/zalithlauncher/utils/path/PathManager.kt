@@ -13,6 +13,7 @@ class PathManager {
         lateinit var DIR_FILE: File
         lateinit var DIR_DATA: String //Initialized later to get context
         lateinit var DIR_CACHE: File
+        lateinit var DIR_LINKER_COMPAT: File
         lateinit var DIR_MULTIRT_HOME: String
         @JvmField var DIR_GAME_HOME: String = Environment.getExternalStorageDirectory().absolutePath + "/games/${InfoDistributor.LAUNCHER_NAME}"
         lateinit var DIR_LAUNCHER_LOG: String
@@ -40,6 +41,9 @@ class PathManager {
             DIR_FILE = context.filesDir
             DIR_DATA = DIR_FILE.getParent()!!
             DIR_CACHE = context.cacheDir
+            DIR_LINKER_COMPAT = File(DIR_CACHE, "linker_compat").also {
+                it.mkdirs()
+            }
             DIR_MULTIRT_HOME = "$DIR_DATA/runtimes"
             DIR_GAME_HOME = getExternalStorageRoot(context).absolutePath
             DIR_LAUNCHER_LOG = "$DIR_GAME_HOME/launcher_log"
