@@ -264,7 +264,7 @@ dependencies {
 
     // implementation("net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0")
 
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.commonmark:commonmark:0.19.0")

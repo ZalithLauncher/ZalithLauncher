@@ -22,6 +22,10 @@ tasks.jar {
         }
     })
     exclude("net/java/openjdk/cacio/ctc/**")
+    manifest {
+        attributes("Manifest-Version" to "3.3.6")
+        attributes("Automatic-Module-Name" to "org.lwjgl")
+    }
 }
 
 java {
