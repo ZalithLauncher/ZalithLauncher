@@ -641,6 +641,7 @@
     <string name="splash_screen_jre8">بيئة Java 8، يعتمد Minecraft 1.16- على Java 8.</string>
     <string name="splash_screen_jre17">بيئة Java 17، يعتمد Minecraft 1.17+ على Java 17.</string>
     <string name="splash_screen_jre21">بيئة Java 21، يعتمد Minecraft 1.20.5+ على Java 21.</string>
+    <string name="splash_screen_jre25">بيئة Java 25، يعتمد Minecraft 26.1+ على Java 25.</string>
     <string name="splash_screen_apply">موافقة وتثبيت</string>
     <!-- About -->
     <string name="about_tab">حول %s</string>

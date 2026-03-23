@@ -641,6 +641,7 @@
     <string name="splash_screen_jre8">Môi trường Java 8, Minecraft 1.16- phụ thuộc vào Java 8.</string>
     <string name="splash_screen_jre17">Môi trường Java 17, Minecraft 1.17+ phụ thuộc vào Java 17.</string>
     <string name="splash_screen_jre21">Môi trường Java 21, Minecraft 1.20.5+ phụ thuộc vào Java 21.</string>
+    <string name="splash_screen_jre25">Môi trường Java 25, Minecraft 26.1+ phụ thuộc vào Java 25.</string>
     <string name="splash_screen_apply">Đồng ý và cài đặt</string>
     <!-- About -->
     <string name="about_tab">Giới thiệu về %s</string>
