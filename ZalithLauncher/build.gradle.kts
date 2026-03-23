@@ -33,11 +33,78 @@ val launcherAPPName = project.findProperty("launcher_app_name") as? String ?: er
 val launcherName = project.findProperty("launcher_name") as? String ?: error("The \"launcher_name\" property is not set in gradle.properties.")
 val launcherVersionCode = (project.findProperty("launcher_version_code") as? String)?.toIntOrNull() ?: error("The \"launcher_version_code\" property is not set as an integer in gradle.properties.")
 val launcherVersionName = project.findProperty("launcher_version_name") as? String ?: error("The \"launcher_version_name\" property is not set in gradle.properties.")
+val distantHorizonsZstdVersion = "1.5.7-6"
+val distantHorizonsNativeLibName = "libzalith_dh_zstd.so"
+val distantHorizonsGeneratedDir = layout.buildDirectory.dir("generated/distantHorizonsZstd/jniLibs")
 
 configurations {
     create("instrumentedClasspath") {
         isCanBeConsumed = false
         isCanBeResolved = true
+    }
+    create("distantHorizonsZstdNative") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
+}
+
+fun ByteArray.replaceAll(target: ByteArray, replacement: ByteArray): ByteArray {
+    require(target.isNotEmpty()) { "Target sequence must not be empty" }
+    require(target.size == replacement.size) { "Replacement sequence must preserve binary length" }
+
+    val output = copyOf()
+    var index = 0
+    while (index <= output.size - target.size) {
+        var match = true
+        for (offset in target.indices) {
+            if (output[index + offset] != target[offset]) {
+                match = false
+                break
+            }
+        }
+        if (match) {
+            replacement.copyInto(output, index)
+            index += target.size
+        } else {
+            index++
+        }
+    }
+    return output
+}
+
+val prepareDistantHorizonsZstd by tasks.registering {
+    val nativeConfiguration = configurations.named("distantHorizonsZstdNative")
+    inputs.files(nativeConfiguration)
+    outputs.dir(distantHorizonsGeneratedDir)
+
+    doLast {
+        val generatedRoot = distantHorizonsGeneratedDir.get().asFile
+        delete(generatedRoot)
+        generatedRoot.mkdirs()
+
+        val replacements = listOf(
+            "Java_com_github_luben_zstd_".toByteArray() to "Java_dhcomgithubluben_zstd_".toByteArray(),
+            "com/github/luben/zstd".toByteArray() to "dhcomgithubluben/zstd".toByteArray()
+        )
+
+        val nativeAar = nativeConfiguration.get().singleFile
+        val nativeLibraries = zipTree(nativeAar).matching {
+            include("jni/*/libzstd-jni-$distantHorizonsZstdVersion.so")
+        }.files
+
+        if (nativeLibraries.isEmpty()) {
+            error("No Android zstd-jni libraries were found in ${nativeAar.name}")
+        }
+
+        nativeLibraries.forEach { inputLib ->
+            val abi = inputLib.parentFile.name
+            val abiOutputDir = File(generatedRoot, abi).also { it.mkdirs() }
+            var bytes = inputLib.readBytes()
+            replacements.forEach { (target, replacement) ->
+                bytes = bytes.replaceAll(target, replacement)
+            }
+            File(abiOutputDir, distantHorizonsNativeLibName).writeBytes(bytes)
+        }
     }
 }
 
@@ -108,6 +175,7 @@ android {
     }
 
     sourceSets["main"].java.srcDirs(generatedZalithDir)
+    sourceSets["main"].jniLibs.srcDir(distantHorizonsGeneratedDir)
 
     androidComponents {
         onVariants { variant ->
@@ -226,9 +294,11 @@ tasks.register("generateInfoDistributor") {
 
 tasks.named("preBuild") {
     dependsOn("generateInfoDistributor")
+    dependsOn(prepareDistantHorizonsZstd)
 }
 
 dependencies {
+    add("distantHorizonsZstdNative", "com.github.luben:zstd-jni:$distantHorizonsZstdVersion@aar")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("commons-codec:commons-codec:1.17.1")
     // implementation("com.wu-man:android-bsf-api:3.1.3")
