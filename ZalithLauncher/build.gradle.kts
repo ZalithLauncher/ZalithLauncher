@@ -33,11 +33,91 @@ val launcherAPPName = project.findProperty("launcher_app_name") as? String ?: er
 val launcherName = project.findProperty("launcher_name") as? String ?: error("The \"launcher_name\" property is not set in gradle.properties.")
 val launcherVersionCode = (project.findProperty("launcher_version_code") as? String)?.toIntOrNull() ?: error("The \"launcher_version_code\" property is not set as an integer in gradle.properties.")
 val launcherVersionName = project.findProperty("launcher_version_name") as? String ?: error("The \"launcher_version_name\" property is not set in gradle.properties.")
+val distantHorizonsZstdVersion = "1.5.7-6"
+val distantHorizonsNativeLibName = "libzalith_dh_zstd.so"
+val distantHorizonsBaseLibDir = layout.buildDirectory.dir("generated/distantHorizonsZstd/baseJniLibs")
+val distantHorizonsWrapperLibDir = layout.buildDirectory.dir("generated/distantHorizonsZstd/wrapperJniLibs")
+val distantHorizonsWrapperBuildDir = layout.buildDirectory.dir("generated/distantHorizonsZstd/cmake")
 
 configurations {
     create("instrumentedClasspath") {
         isCanBeConsumed = false
         isCanBeResolved = true
+    }
+    create("distantHorizonsZstdNative") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
+}
+
+val prepareDistantHorizonsZstdBaseNatives by tasks.registering {
+    val nativeConfiguration = configurations.named("distantHorizonsZstdNative")
+    inputs.files(nativeConfiguration)
+    outputs.dir(distantHorizonsBaseLibDir)
+
+    doLast {
+        val generatedRoot = distantHorizonsBaseLibDir.get().asFile
+        delete(generatedRoot)
+        generatedRoot.mkdirs()
+
+        val nativeAar = nativeConfiguration.get().singleFile
+        val nativeLibraries = zipTree(nativeAar).matching {
+            include("jni/*/libzstd-jni-$distantHorizonsZstdVersion.so")
+        }.files
+
+        if (nativeLibraries.isEmpty()) {
+            error("No Android zstd-jni libraries were found in ${nativeAar.name}")
+        }
+
+        nativeLibraries.forEach { inputLib ->
+            val abi = inputLib.parentFile.name
+            val abiOutputDir = File(generatedRoot, abi).also { it.mkdirs() }
+            inputLib.copyTo(File(abiOutputDir, inputLib.name), overwrite = true)
+        }
+    }
+}
+
+val buildDistantHorizonsZstdWrapper by tasks.registering {
+    val wrapperSourceDir = file("src/main/cmake/distant_horizons_zstd")
+    val supportedAbis = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+
+    dependsOn(prepareDistantHorizonsZstdBaseNatives)
+    inputs.dir(wrapperSourceDir)
+    outputs.dir(distantHorizonsWrapperLibDir)
+
+    doLast {
+        val cmakeBuildRoot = distantHorizonsWrapperBuildDir.get().asFile
+        val wrapperOutputRoot = distantHorizonsWrapperLibDir.get().asFile
+        delete(cmakeBuildRoot)
+        delete(wrapperOutputRoot)
+        cmakeBuildRoot.mkdirs()
+        wrapperOutputRoot.mkdirs()
+
+        val sdkDirectory = android.sdkDirectory
+        val ndkRoot = File(sdkDirectory, "ndk/${android.ndkVersion}")
+        val toolchainFile = File(ndkRoot, "build/cmake/android.toolchain.cmake")
+        require(toolchainFile.isFile) { "Missing Android CMake toolchain file: ${toolchainFile.absolutePath}" }
+
+        supportedAbis.forEach { abi ->
+            val abiBuildDir = File(cmakeBuildRoot, abi).also { it.mkdirs() }
+            val abiOutputDir = File(wrapperOutputRoot, abi).also { it.mkdirs() }
+
+            exec {
+                commandLine(
+                    "cmake",
+                    "-S", wrapperSourceDir.absolutePath,
+                    "-B", abiBuildDir.absolutePath,
+                    "-DCMAKE_TOOLCHAIN_FILE=${toolchainFile.absolutePath}",
+                    "-DANDROID_ABI=$abi",
+                    "-DANDROID_PLATFORM=android-26",
+                    "-DCMAKE_BUILD_TYPE=Release",
+                    "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${abiOutputDir.absolutePath}"
+                )
+            }
+            exec {
+                commandLine("cmake", "--build", abiBuildDir.absolutePath, "--config", "Release")
+            }
+        }
     }
 }
 
@@ -108,6 +188,8 @@ android {
     }
 
     sourceSets["main"].java.srcDirs(generatedZalithDir)
+    sourceSets["main"].jniLibs.srcDir(distantHorizonsBaseLibDir)
+    sourceSets["main"].jniLibs.srcDir(distantHorizonsWrapperLibDir)
 
     androidComponents {
         onVariants { variant ->
@@ -226,9 +308,12 @@ tasks.register("generateInfoDistributor") {
 
 tasks.named("preBuild") {
     dependsOn("generateInfoDistributor")
+    dependsOn(prepareDistantHorizonsZstdBaseNatives)
+    dependsOn(buildDistantHorizonsZstdWrapper)
 }
 
 dependencies {
+    add("distantHorizonsZstdNative", "com.github.luben:zstd-jni:$distantHorizonsZstdVersion@aar")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("commons-codec:commons-codec:1.17.1")
     // implementation("com.wu-man:android-bsf-api:3.1.3")

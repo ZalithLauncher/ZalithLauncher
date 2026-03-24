@@ -6,6 +6,7 @@ import com.movtery.zalithlauncher.feature.accounts.AccountUtils
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome.Companion.getLibrariesHome
 import com.movtery.zalithlauncher.feature.version.Version
+import com.movtery.zalithlauncher.mods.DistantHorizonsSupport
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.path.LibPath
 import com.movtery.zalithlauncher.utils.path.PathManager
@@ -64,13 +65,18 @@ class LaunchArgs(
         val is7 = VersionNumber.compare(VersionNumber.asVersion(versionInfo.id ?: "0.0").canonical, "1.12") < 0
         val configFilePath = if (is7) LibPath.LOG4J_XML_1_7 else LibPath.LOG4J_XML_1_12
         argsList.add("-Dlog4j.configurationFile=${configFilePath.absolutePath}")
+        argsList.addAll(DistantHorizonsSupport.buildJvmArgs(gameDirPath))
 
         val versionSpecificNativesDir = File(PathManager.DIR_CACHE, "natives/${minecraftVersion.getVersionName()}")
-        if (versionSpecificNativesDir.exists()) {
-            val dirPath = versionSpecificNativesDir.absolutePath
-            argsList.add("-Djava.library.path=$dirPath:${PathManager.DIR_NATIVE_LIB}")
-            argsList.add("-Djna.boot.library.path=$dirPath")
-        }
+        val nativeSearchPath = buildList {
+            if (versionSpecificNativesDir.exists()) {
+                add(versionSpecificNativesDir.absolutePath)
+            }
+            add(PathManager.DIR_NATIVE_LIB)
+        }.joinToString(":")
+
+        argsList.add("-Djava.library.path=$nativeSearchPath")
+        argsList.add("-Djna.boot.library.path=$nativeSearchPath")
 
         return argsList
     }
