@@ -27,6 +27,7 @@
 - [x] Better version management, customizable game directory location, allowing settings in external storage directories.
 - [x] Add more renderers, with support for renderer plugins!
 - [x] Download Mods, ModPacks, resource packs, saves, and shader packs directly within the launcher!
+- [x] Built-in native compatibility workaround for Distant Horizons on Android, including the launcher-provided `zstd-jni` library path override used by ARM64 devices.
 - [x] Customizable virtual mouse icon and launcher background image.
 - [x] Light and dark themes available.
 - [x] And more features!
