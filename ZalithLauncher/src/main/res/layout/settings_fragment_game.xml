@@ -295,6 +295,76 @@
             </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
             <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                android:id="@+id/jvmEngine_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:padding="@dimen/_12sdp">
+
+                <TextView
+                    android:id="@+id/jvmEngine_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_jvm_engine_title"
+                    android:textColor="@color/black_or_white" />
+
+                <TextView
+                    android:id="@+id/jvmEngine_summary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/jvmEngine_title"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_jvm_engine_desc" />
+
+                <TextView
+                    android:id="@+id/jvmEngine_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/jvmEngine_summary"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_jvm_engine_openjdk" />
+            </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+            <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                android:id="@+id/garbageCollector_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:padding="@dimen/_12sdp">
+
+                <TextView
+                    android:id="@+id/garbageCollector_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_gc_title"
+                    android:textColor="@color/black_or_white" />
+
+                <TextView
+                    android:id="@+id/garbageCollector_summary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/garbageCollector_title"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_gc_desc" />
+
+                <TextView
+                    android:id="@+id/garbageCollector_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/garbageCollector_summary"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_java_gc_g1gc" />
+            </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+
+            <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                 android:id="@+id/javaArgs_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

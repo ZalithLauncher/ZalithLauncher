@@ -7,6 +7,7 @@ import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome
 import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome.Companion.getLibrariesHome
 import com.movtery.zalithlauncher.feature.version.Version
 import com.movtery.zalithlauncher.mods.DistantHorizonsSupport
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.ZHTools
 import com.movtery.zalithlauncher.utils.path.LibPath
 import com.movtery.zalithlauncher.utils.path.PathManager
@@ -66,6 +67,7 @@ class LaunchArgs(
         val configFilePath = if (is7) LibPath.LOG4J_XML_1_7 else LibPath.LOG4J_XML_1_12
         argsList.add("-Dlog4j.configurationFile=${configFilePath.absolutePath}")
         argsList.addAll(DistantHorizonsSupport.buildJvmArgs(gameDirPath))
+        argsList.addAll(buildPerformanceJvmArgs(runtime.javaVersion))
 
         val versionSpecificNativesDir = File(PathManager.DIR_CACHE, "natives/${minecraftVersion.getVersionName()}")
         val nativeSearchPath = buildList {
@@ -79,6 +81,36 @@ class LaunchArgs(
         argsList.add("-Djna.boot.library.path=$nativeSearchPath")
 
         return argsList
+    }
+
+    private fun buildPerformanceJvmArgs(javaVersion: Int): List<String> {
+        val args = mutableListOf<String>()
+
+        when (AllSettings.garbageCollector.getValue().lowercase()) {
+            "zgc_gen" -> {
+                if (javaVersion >= 21) {
+                    args.add("-XX:+UseZGC")
+                    args.add("-XX:+ZGenerational")
+                } else {
+                    args.add("-XX:+UseG1GC")
+                }
+            }
+            "shenandoah" -> args.add("-XX:+UseShenandoahGC")
+            else -> args.add("-XX:+UseG1GC")
+        }
+
+        when (AllSettings.jvmEngine.getValue().lowercase()) {
+            "openj9" -> {
+                args.add("-Xshareclasses")
+                args.add("-Xquickstart")
+            }
+            "graalvm" -> {
+                args.add("-XX:+UnlockExperimentalVMOptions")
+                args.add("-XX:+EagerJVMCI")
+            }
+        }
+
+        return args
     }
 
     private fun getMinecraftJVMArgs(): Array<String> {

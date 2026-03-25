@@ -106,6 +106,24 @@ class GameSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragment
             R.array.select_java_runtime_names, R.array.select_java_runtime_values
         )
 
+        ListSettingsWrapper(
+            context,
+            AllSettings.jvmEngine,
+            binding.jvmEngineLayout,
+            binding.jvmEngineTitle,
+            binding.jvmEngineValue,
+            R.array.jvm_engine_names, R.array.jvm_engine_values
+        )
+
+        ListSettingsWrapper(
+            context,
+            AllSettings.garbageCollector,
+            binding.garbageCollectorLayout,
+            binding.garbageCollectorTitle,
+            binding.garbageCollectorValue,
+            R.array.java_gc_names, R.array.java_gc_values
+        )
+
         EditTextSettingsWrapper(
             AllSettings.javaArgs,
             binding.javaArgsLayout,

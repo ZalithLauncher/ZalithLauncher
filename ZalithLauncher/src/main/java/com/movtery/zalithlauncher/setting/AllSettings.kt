@@ -112,6 +112,12 @@ class AllSettings {
         val selectRuntimeMode = StringSettingUnit("selectRuntimeMode", "auto")
 
         @JvmStatic
+        val jvmEngine = StringSettingUnit("jvmEngine", "openjdk")
+
+        @JvmStatic
+        val garbageCollector = StringSettingUnit("garbageCollector", "g1gc")
+
+        @JvmStatic
         val javaArgs = StringSettingUnit("javaArgs", "")
 
         @JvmStatic

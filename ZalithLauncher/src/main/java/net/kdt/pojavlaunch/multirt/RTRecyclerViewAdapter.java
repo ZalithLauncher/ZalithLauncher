@@ -104,8 +104,9 @@ public class RTRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     private String getJavaVersionName(Runtime runtime) {
-        return runtime.name.replace(".tar.xz", "")
+        String baseName = runtime.name.replace(".tar.xz", "")
                 .replace("-", " ");
+        return baseName + " (" + runtime.getJvmEngineDisplayName() + ")";
     }
 
     public class RTSelectViewHolder extends RecyclerView.ViewHolder {

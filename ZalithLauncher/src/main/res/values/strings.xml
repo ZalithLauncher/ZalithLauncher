@@ -470,6 +470,16 @@
     <string name="setting_java_select_runtime_desc">The Java runtime environment to be used before entering the execution environment</string>
     <string name="setting_java_select_runtime_ask_me">Let me choose temporarily</string>
     <string name="setting_java_select_runtime_default">Current default runtime environment</string>
+    <string name="setting_java_jvm_engine_title">JVM Engine</string>
+    <string name="setting_java_jvm_engine_desc">Select the Java engine profile to optimize startup speed or memory usage</string>
+    <string name="setting_java_jvm_engine_openjdk">OpenJDK</string>
+    <string name="setting_java_jvm_engine_openj9">OpenJ9</string>
+    <string name="setting_java_jvm_engine_graalvm">GraalVM</string>
+    <string name="setting_java_gc_title">Garbage Collector</string>
+    <string name="setting_java_gc_desc">Choose the garbage collector strategy used by the selected runtime</string>
+    <string name="setting_java_gc_g1gc">G1GC</string>
+    <string name="setting_java_gc_generational_zgc">Generational ZGC (Java 21+)</string>
+    <string name="setting_java_gc_shenandoah">Shenandoah</string>
     <string name="setting_java_args_title">JVM Startup Arguments</string>
     <string name="setting_java_args_desc">Additional JVM arguments added when launching Minecraft. It is not recommended to modify this without confidence, as it may cause the game to crash</string>
     <string name="setting_java_memory_title">Memory Allocation</string>

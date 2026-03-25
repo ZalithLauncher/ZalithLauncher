@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,15 @@ public class MultiRTUtils {
     private static final File RUNTIME_FOLDER = new File(PathManager.DIR_MULTIRT_HOME);
     private static final String JAVA_VERSION_STR = "JAVA_VERSION=\"";
     private static final String OS_ARCH_STR = "OS_ARCH=\"";
+
+    public static List<String> getSupportedJvmEngines() {
+        return Arrays.asList(Runtime.ENGINE_OPENJDK, Runtime.ENGINE_OPENJ9, Runtime.ENGINE_GRAALVM);
+    }
+
+    public static boolean isRuntimeCompatibleWithEngine(Runtime runtime, String engine) {
+        if (runtime == null || engine == null) return false;
+        return runtime.jvmEngine.equalsIgnoreCase(engine);
+    }
 
     public static List<Runtime> getRuntimes() {
         if (!RUNTIME_FOLDER.exists() && !RUNTIME_FOLDER.mkdirs()) {

@@ -21,6 +21,30 @@
         <item>auto</item>
     </string-array>
 
+    <string-array name="jvm_engine_names">
+        <item>@string/setting_java_jvm_engine_openjdk</item>
+        <item>@string/setting_java_jvm_engine_openj9</item>
+        <item>@string/setting_java_jvm_engine_graalvm</item>
+    </string-array>
+
+    <string-array name="jvm_engine_values">
+        <item>openjdk</item>
+        <item>openj9</item>
+        <item>graalvm</item>
+    </string-array>
+
+    <string-array name="java_gc_names">
+        <item>@string/setting_java_gc_g1gc</item>
+        <item>@string/setting_java_gc_generational_zgc</item>
+        <item>@string/setting_java_gc_shenandoah</item>
+    </string-array>
+
+    <string-array name="java_gc_values">
+        <item>g1gc</item>
+        <item>zgc_gen</item>
+        <item>shenandoah</item>
+    </string-array>
+
     <string-array name="launcher_theme_names">
         <item>@string/setting_launcher_theme_system</item>
         <item>@string/setting_launcher_theme_light</item>
