@@ -53,6 +53,12 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
@@ -246,7 +252,23 @@ public final class ZHTools {
     }
 
     public static Date getDate(String dateString) {
-        Instant instant = Instant.parse(dateString);
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+                .appendPattern("[XXX][X]")
+                .toFormatter()
+                .withZone(ZoneOffset.UTC);
+
+        Instant instant;
+        try {
+            instant = Instant.from(formatter.parse(dateString));
+        } catch (DateTimeParseException e) {
+            try {
+                instant = Instant.parse(dateString);
+            } catch (DateTimeParseException e2) {
+                instant = OffsetDateTime.parse(dateString).toInstant();
+            }
+        }
         return Date.from(instant);
     }
 
