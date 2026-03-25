@@ -2,27 +2,29 @@ name: Android CI
 
 on:
   push:
+    branches:
+      - main
+      - master
   pull_request:
   workflow_dispatch:
 
 jobs:
-  BuildRelease:
-    if: github.repository_owner == 'ZalithLauncher' && !startsWith(github.ref, 'refs/pull/') && github.ref_name == 'main'
+  build-release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        arch: [ "all", "arm", "arm64", "x86", "x86_64" ]
-      fail-fast: false
-
+    permissions:
+      contents: write
     env:
       CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+      MOVTERY_KEYSTORE_PASSWORD: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set build type
-        id: set-env
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           BUILD_TYPE="DEBUG"
@@ -33,36 +35,57 @@ jobs:
             BUILD_TYPE="RELEASE"
           fi
 
-          echo "ZL_BUILD_TYPE=${BUILD_TYPE}" >> $GITHUB_ENV
+          echo "ZL_BUILD_TYPE=${BUILD_TYPE}" >> "$GITHUB_ENV"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
+          cache: gradle
+
+      - name: Prepare release metadata
+        id: metadata
+        run: |
+          VERSION_NAME="$(awk -F= '/^launcher_version_name=/{print $2}' ZalithLauncher/gradle.properties)"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          BUILD_DATE="$(date -u +'%Y%m%d-%H%M%S')"
+          TAG_NAME="v${VERSION_NAME}-${BUILD_DATE}-${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
+          RELEASE_NAME="ZalithLauncher ${VERSION_NAME} (${SHORT_SHA})"
+
+          echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "build_date=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          echo "release_name=${RELEASE_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Build JRE JAR files
         run: |
           chmod +x gradlew
-          mkdir out
           ./gradlew jre_lwjgl3glfw:build --no-daemon
 
-      - name: Build Release ${{ matrix.arch }}
-        env:
-          MOVTERY_KEYSTORE_PASSWORD: ${{ secrets.MOVTERY_KEYSTORE_PASSWORD }}
+      - name: Build release APK
         run: |
           chmod +x gradlew
-          ./gradlew ZalithLauncher:assemblerelease -Darch=${{ matrix.arch }}
+          ./gradlew ZalithLauncher:assembleRelease --no-daemon -Darch=all
 
-      - name: Upload Release ${{matrix.arch}}
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ZalithLauncher(Release) ${{ matrix.arch }}
-          path: ZalithLauncher/build/outputs/apk/release/*
+          tag_name: ${{ steps.metadata.outputs.tag_name }}
+          name: ${{ steps.metadata.outputs.release_name }}
+          generate_release_notes: true
+          files: |
+            ZalithLauncher/build/outputs/apk/release/*.apk
+          body: |
+            Automated release for commit `${{ github.sha }}`.
 
-  BuildDebug:
-    if: startsWith(github.ref, 'refs/pull/') || github.ref_name != 'main'
+            - Launcher version: `${{ steps.metadata.outputs.version_name }}`
+            - Branch: `${{ github.ref_name }}`
+            - Build date (UTC): `${{ steps.metadata.outputs.build_date }}`
+
+  build-debug:
+    if: github.event_name != 'push'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -76,22 +99,22 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Build JRE JAR files
         run: |
           chmod +x gradlew
-          mkdir out
           ./gradlew jre_lwjgl3glfw:build --no-daemon
 
-      - name: Build Debug ${{matrix.arch}}
+      - name: Build Debug ${{ matrix.arch }}
         run: |
           chmod +x gradlew
-          ./gradlew ZalithLauncher:assembleDebug -Darch=${{ matrix.arch }}
+          ./gradlew ZalithLauncher:assembleDebug --no-daemon -Darch=${{ matrix.arch }}
 
-      - name: Upload Debug ${{matrix.arch}}
+      - name: Upload Debug ${{ matrix.arch }}
         uses: actions/upload-artifact@v4
         with:
-          name: ZalithLauncher(Debug) ${{ matrix.arch }}
+          name: ZalithLauncher-Debug-${{ matrix.arch }}
           path: ZalithLauncher/build/outputs/apk/debug/*
