@@ -678,6 +678,7 @@
     <string name="splash_screen_jre8">Java 8 环境，Minecraft 1.16- 依赖 Java 8。</string>
     <string name="splash_screen_jre17">Java 17 环境，Minecraft 1.17+ 依赖 Java 17。</string>
     <string name="splash_screen_jre21">Java 21 环境，Minecraft 1.20.5+ 依赖 Java 21。</string>
+    <string name="splash_screen_jre25">Java 25 环境，Minecraft 26.1+ 依赖 Java 25。</string>
     <string name="splash_screen_apply">同意并安装</string>
 
     <!-- About -->

@@ -441,17 +441,19 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
                 javaArgList.add("-jar");
                 javaArgList.add(modFile.getAbsolutePath());
             }
-            
-            if (AllSettings.getJavaSandbox().getValue()) {
+
+            boolean disableSecurityManager = getIntent().getBooleanExtra("disableSecurityManager", false);
+    
+            if (AllSettings.getJavaSandbox().getValue() && !disableSecurityManager) {
                 Collections.reverse(javaArgList);
                 javaArgList.add("-Xbootclasspath/a:" + LibPath.PRO_GRADE.getAbsolutePath());
                 javaArgList.add("-Djava.security.manager=net.sourceforge.prograde.sm.ProGradeJSM");
                 javaArgList.add("-Djava.security.policy=" + LibPath.JAVA_SANDBOX_POLICY.getAbsolutePath());
                 Collections.reverse(javaArgList);
             }
-
+    
             Logger.appendToLog("Info: Java arguments: " + Arrays.toString(javaArgList.toArray(new String[0])));
-
+    
             JREUtils.launchWithUtils(this, runtime, null, javaArgList, AllSettings.getJavaArgs().getValue());
         } catch (Throwable th) {
             Tools.showError(this, th, true);

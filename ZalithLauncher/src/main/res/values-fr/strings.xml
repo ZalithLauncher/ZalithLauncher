@@ -641,6 +641,7 @@
     <string name="splash_screen_jre8">Environnement Java 8, Minecraft 1.16- dépend de Java 8.</string>
     <string name="splash_screen_jre17">Environnement Java 17, Minecraft 1.17+ dépend de Java 17.</string>
     <string name="splash_screen_jre21">Environnement Java 21, Minecraft 1.20.5+ dépend de Java 21.</string>
+    <string name="splash_screen_jre25">Environnement Java 25, Minecraft 26.1+ dépend de Java 25.</string>
     <string name="splash_screen_apply">Accepter et installer</string>
     <!-- About -->
     <string name="about_tab">À propos de %s</string>

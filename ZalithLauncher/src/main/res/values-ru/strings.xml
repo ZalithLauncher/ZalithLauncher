@@ -641,6 +641,7 @@
     <string name="splash_screen_jre8">Среда Java 8, Minecraft 1.16- зависит от Java 8.</string>
     <string name="splash_screen_jre17">Среда Java 17, Minecraft 1.17+ зависит от Java 17.</string>
     <string name="splash_screen_jre21">Среда Java 21, Minecraft 1.20.5+ зависит от Java 21.</string>
+    <string name="splash_screen_jre25">Среда Java 25, Minecraft 26.1+ зависит от Java 25.</string>
     <string name="splash_screen_apply">Согласиться и установить</string>
     <!-- About -->
     <string name="about_tab">О %s</string>

@@ -641,6 +641,7 @@
     <string name="splash_screen_jre8">Java 8 環境，Minecraft 1.16- 依賴 Java 8。</string>
     <string name="splash_screen_jre17">Java 17 環境，Minecraft 1.17+ 依賴 Java 17。</string>
     <string name="splash_screen_jre21">Java 21 環境，Minecraft 1.20.5+ 依賴 Java 21。</string>
+    <string name="splash_screen_jre25">Java 25 環境，Minecraft 26.1+ 依賴 Java 25。</string>
     <string name="splash_screen_apply">同意並安裝</string>
     <!-- About -->
     <string name="about_tab">關於 %s</string>
