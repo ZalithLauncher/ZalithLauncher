@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Floating draggable + 8-directional resizable log window.
+    Drag zone   : title bar
+    Resize zones: 4 edges + 4 corners (all transparent touch targets)
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/floating_logger_root"
+    android:layout_width="360dp"
+    android:layout_height="240dp"
+    android:background="@drawable/background_card"
+    android:clipChildren="false"
+    android:elevation="8dp">
+
+    <!-- ═══════════════════════  TITLE BAR (drag handle)  ════════════════ -->
+    <LinearLayout
+        android:id="@+id/floating_log_titlebar"
+        android:layout_width="0dp"
+        android:layout_height="36dp"
+        android:background="@color/background_menu_top"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:alpha="0.55"
+            android:contentDescription="@string/generic_move"
+            android:src="@drawable/ic_view_handle" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/log_view_label_log_output"
+            android:textColor="@color/menu_bar_text"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <ToggleButton
+            android:id="@+id/floating_toggle_autoscroll"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="3dp"
+            android:checked="true"
+            android:textOff="@string/log_view_button_scroll_off"
+            android:textOn="@string/log_view_button_scroll_on"
+            android:textSize="8sp" />
+
+        <ToggleButton
+            android:id="@+id/floating_toggle_log"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="3dp"
+            android:checked="true"
+            android:textOff="@string/log_view_button_output_off"
+            android:textOn="@string/log_view_button_output_on"
+            android:textSize="8sp" />
+
+        <ImageButton
+            android:id="@+id/floating_close_button"
+            android:layout_width="26dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/generic_close"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_close" />
+
+    </LinearLayout>
+
+    <!-- ═══════════════════════  LOG CONTENT  ════════════════════════════ -->
+    <com.kdt.DefocusableScrollView
+        android:id="@+id/floating_log_scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.93"
+        android:background="#CC000000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/floating_log_titlebar">
+
+        <TextView
+            android:id="@+id/floating_log_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:isScrollContainer="true"
+            android:padding="4dp"
+            android:textColor="@android:color/white"
+            android:textIsSelectable="true"
+            android:textSize="9sp" />
+
+    </com.kdt.DefocusableScrollView>
+
+    <!-- ═══════════════════  8 RESIZE HANDLE TOUCH ZONES  ════════════════
+         Corners = 20×20 dp  |  Edges = 10 dp thick, span between corners
+         All backgrounds are transparent; bottom-right gets a subtle grip icon.
+    ══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- TOP-LEFT corner -->
+    <View android:id="@+id/rz_top_left"
+        android:layout_width="20dp" android:layout_height="20dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TOP-RIGHT corner -->
+    <View android:id="@+id/rz_top_right"
+        android:layout_width="20dp" android:layout_height="20dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- BOTTOM-LEFT corner -->
+    <View android:id="@+id/rz_bottom_left"
+        android:layout_width="20dp" android:layout_height="20dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- BOTTOM-RIGHT corner (visual grip dot so users discover it) -->
+    <ImageView android:id="@+id/rz_bottom_right"
+        android:layout_width="20dp" android:layout_height="20dp"
+        android:src="@drawable/ic_view_handle"
+        android:alpha="0.35"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/generic_more"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- TOP edge (between TL and TR corners) -->
+    <View android:id="@+id/rz_top"
+        android:layout_width="0dp" android:layout_height="10dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toStartOf="@+id/rz_top_right"
+        app:layout_constraintStart_toEndOf="@+id/rz_top_left"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- BOTTOM edge -->
+    <View android:id="@+id/rz_bottom"
+        android:layout_width="0dp" android:layout_height="10dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/rz_bottom_right"
+        app:layout_constraintStart_toEndOf="@+id/rz_bottom_left" />
+
+    <!-- LEFT edge -->
+    <View android:id="@+id/rz_left"
+        android:layout_width="10dp" android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/rz_bottom_left"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rz_top_left" />
+
+    <!-- RIGHT edge -->
+    <View android:id="@+id/rz_right"
+        android:layout_width="10dp" android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/rz_bottom_right"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rz_top_right" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
