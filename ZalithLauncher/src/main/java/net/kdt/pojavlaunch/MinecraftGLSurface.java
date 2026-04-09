@@ -7,6 +7,7 @@ import static org.lwjgl.glfw.CallbackBridge.windowWidth;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.view.InputDevice;
@@ -24,6 +25,7 @@ import androidx.annotation.NonNull;
 import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
 import com.movtery.zalithlauncher.feature.MCOptions;
 import com.movtery.zalithlauncher.feature.log.Logging;
+import com.movtery.zalithlauncher.renderer.Renderers;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.setting.AllStaticSettings;
 import com.movtery.zalithlauncher.ui.activity.BaseActivity;
@@ -384,6 +386,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
         MCOptions.INSTANCE.set("fullscreen", "false");
         MCOptions.INSTANCE.set("overrideWidth", String.valueOf(windowWidth));
         MCOptions.INSTANCE.set("overrideHeight", String.valueOf(windowHeight));
+        forceGraphicsApiForRenderer();
         MCOptions.INSTANCE.save();
         MCOptions.INSTANCE.getMcScale();
 
@@ -420,6 +423,35 @@ public class MinecraftGLSurface extends View implements GrabListener {
         }
     }
 
+    /**
+     * Returns true if the device reports Vulkan 1.2 or higher support.
+     * Uses the PackageManager hardware feature flag introduced in API 26.
+     * The version value is encoded as (major << 22) | (minor << 12) | patch,
+     * so Vulkan 1.2.0 = 0x00402000.
+     */
+    private boolean isVulkan12Supported() {
+        try {
+            PackageManager pm = getContext().getPackageManager();
+            // 0x00402000 = (1 << 22) | (2 << 12) = Vulkan 1.2.0
+            return pm.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x00402000);
+        } catch (Throwable t) {
+            Logging.w("MGLSurface", "Vulkan version check failed, assuming no Vulkan 1.2", t);
+            return false;
+        }
+    }
+    
+    private void forceGraphicsApiForRenderer() {
+        try {
+            if (isVulkan12Supported()) {
+                MCOptions.INSTANCE.set("preferredGraphicsBackend", "vulkan");
+            } else {
+                MCOptions.INSTANCE.set("preferredGraphicsBackend", "opengl");
+            }
+        } catch (Throwable throwable) {
+            Logging.w("MGLSurface", "Failed to apply preferredGraphicsBackend override", throwable);
+        }
+    }
+    
     /** A small interface called when the listener is ready for the first time */
     public interface SurfaceReadyListener {
         void isReady();
