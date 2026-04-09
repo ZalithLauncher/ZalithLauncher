@@ -27,8 +27,6 @@ import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome;
 import com.movtery.zalithlauncher.feature.MCOptions;
 import com.movtery.zalithlauncher.feature.log.Logging;
 import com.movtery.zalithlauncher.feature.version.VersionsManager;
-import com.movtery.zalithlauncher.feature.version.Version;
-import com.movtery.zalithlauncher.feature.version.VersionInfo;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.setting.AllStaticSettings;
 import com.movtery.zalithlauncher.ui.activity.BaseActivity;
