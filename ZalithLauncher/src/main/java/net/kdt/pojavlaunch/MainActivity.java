@@ -505,6 +505,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+        MinecraftGLSurface.setCurrentVersionName(minecraftVersion.getVersionName());
         binding.mainGameRenderView.start(GameService.isActive(), binding.mainTouchpad);
         GameService.setActive(true);
     }

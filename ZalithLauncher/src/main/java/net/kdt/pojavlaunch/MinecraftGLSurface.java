@@ -23,8 +23,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
+import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome;
 import com.movtery.zalithlauncher.feature.MCOptions;
 import com.movtery.zalithlauncher.feature.log.Logging;
+import com.movtery.zalithlauncher.feature.version.VersionsManager;
+import com.movtery.zalithlauncher.feature.version.Version;
+import com.movtery.zalithlauncher.feature.version.VersionInfo;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.setting.AllStaticSettings;
 import com.movtery.zalithlauncher.ui.activity.BaseActivity;
@@ -42,6 +46,10 @@ import net.kdt.pojavlaunch.utils.JREUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.lwjgl.glfw.CallbackBridge;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.File;
 import java.util.Locale;
 
 import fr.spse.gamepad_remapper.RemapperManager;
@@ -53,6 +61,12 @@ import fr.spse.gamepad_remapper.RemapperView;
 public class MinecraftGLSurface extends View implements GrabListener {
     /* Gamepad object for gamepad inputs, instantiated on need */
     private Gamepad mGamepad = null;
+    
+    private static String sCurrentVersionName = null;
+
+    public static void setCurrentVersionName(String versionName) {
+        sCurrentVersionName = versionName;
+    }
     /* The RemapperView.Builder object allows you to set which buttons to remap */
     private final RemapperManager mInputManager = new RemapperManager(getContext(), new RemapperView.Builder(null)
             .remapA(true)
@@ -439,16 +453,47 @@ public class MinecraftGLSurface extends View implements GrabListener {
         }
     }
     
+    /**
+     * @return true if the current Minecraft version is 26.2 or higher,
+     *         or if the version cannot be determined (fail-safe returns false).
+     */
     private void forceGraphicsApiForRenderer() {
         try {
-            if (isVulkan12Supported()) {
-                MCOptions.INSTANCE.set("preferredGraphicsBackend", "vulkan");
-            } else {
-                MCOptions.INSTANCE.set("preferredGraphicsBackend", "opengl");
+            String versionName = sCurrentVersionName;
+            if (versionName == null || versionName.isEmpty()) {
+                try {
+                    versionName = VersionsManager.INSTANCE.getCurrentGameInfo().getVersion();
+                } catch (Throwable t) {
+                    return;
+                }
             }
-        } catch (Throwable throwable) {
-            Logging.w("MGLSurface", "Failed to apply preferredGraphicsBackend override", throwable);
-        }
+            if (versionName == null || versionName.isEmpty()) return;
+    
+            File versionFolder = new File(ProfilePathHome.getVersionsHome(), versionName);
+            File versionInfoFile = new File(VersionsManager.INSTANCE.getZalithVersionPath(versionFolder), "VersionInfo.json");
+            if (!versionInfoFile.exists()) return;
+    
+            String jsonContent = Tools.read(versionInfoFile);
+            JsonObject obj = JsonParser.parseString(jsonContent).getAsJsonObject();
+            if (!obj.has("minecraftVersion")) return;
+    
+            String minecraftVersion = obj.get("minecraftVersion").getAsString();
+            int hyphen = minecraftVersion.indexOf('-');
+            String numericPart = (hyphen != -1) ? minecraftVersion.substring(0, hyphen) : minecraftVersion;
+            String[] parts = numericPart.split("\\.");
+            if (parts.length < 2) return;
+    
+            int major = Integer.parseInt(parts[0]);
+            int minor = Integer.parseInt(parts[1]);
+    
+            if (major > 26 || (major == 26 && minor >= 2)) {
+                if (isVulkan12Supported()) {
+                    MCOptions.INSTANCE.set("preferredGraphicsBackend", "vulkan");
+                } else {
+                    MCOptions.INSTANCE.set("preferredGraphicsBackend", "opengl");
+                }
+            }
+        } catch (Throwable ignored) {}
     }
     
     /** A small interface called when the listener is ready for the first time */
