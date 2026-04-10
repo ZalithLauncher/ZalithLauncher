@@ -7,7 +7,6 @@ import static org.lwjgl.glfw.CallbackBridge.windowWidth;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.view.InputDevice;
@@ -23,10 +22,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
-import com.movtery.zalithlauncher.feature.customprofilepath.ProfilePathHome;
 import com.movtery.zalithlauncher.feature.MCOptions;
+import com.movtery.zalithlauncher.feature.graphics.GameGraphicsApiHelper;
 import com.movtery.zalithlauncher.feature.log.Logging;
-import com.movtery.zalithlauncher.feature.version.VersionsManager;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.setting.AllStaticSettings;
 import com.movtery.zalithlauncher.ui.activity.BaseActivity;
@@ -44,10 +42,6 @@ import net.kdt.pojavlaunch.utils.JREUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.lwjgl.glfw.CallbackBridge;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import java.io.File;
 import java.util.Locale;
 
 import fr.spse.gamepad_remapper.RemapperManager;
@@ -397,7 +391,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
         MCOptions.INSTANCE.set("fullscreen", "false");
         MCOptions.INSTANCE.set("overrideWidth", String.valueOf(windowWidth));
         MCOptions.INSTANCE.set("overrideHeight", String.valueOf(windowHeight));
-        forceGraphicsApiForRenderer();
+        GameGraphicsApiHelper.applyPreferredGraphicsBackend(getContext(), sCurrentVersionName);
         MCOptions.INSTANCE.save();
         MCOptions.INSTANCE.getMcScale();
 
@@ -432,66 +426,6 @@ public class MinecraftGLSurface extends View implements GrabListener {
             mCurrentTouchProcessor = pickEventProcessor(isGrabbing);
             mLastGrabState = isGrabbing;
         }
-    }
-
-    /**
-     * Returns true if the device reports Vulkan 1.2 or higher support.
-     * Uses the PackageManager hardware feature flag introduced in API 26.
-     * The version value is encoded as (major << 22) | (minor << 12) | patch,
-     * so Vulkan 1.2.0 = 0x00402000.
-     */
-    private boolean isVulkan12Supported() {
-        try {
-            PackageManager pm = getContext().getPackageManager();
-            // 0x00402000 = (1 << 22) | (2 << 12) = Vulkan 1.2.0
-            return pm.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION, 0x00402000);
-        } catch (Throwable t) {
-            Logging.w("MGLSurface", "Vulkan version check failed, assuming no Vulkan 1.2", t);
-            return false;
-        }
-    }
-    
-    /**
-     * @return true if the current Minecraft version is 26.2 or higher,
-     *         or if the version cannot be determined (fail-safe returns false).
-     */
-    private void forceGraphicsApiForRenderer() {
-        try {
-            String versionName = sCurrentVersionName;
-            if (versionName == null || versionName.isEmpty()) {
-                try {
-                    versionName = VersionsManager.INSTANCE.getCurrentGameInfo().getVersion();
-                } catch (Throwable t) {
-                    return;
-                }
-            }
-            if (versionName == null || versionName.isEmpty()) return;
-    
-            File versionFolder = new File(ProfilePathHome.getVersionsHome(), versionName);
-            File versionInfoFile = new File(VersionsManager.INSTANCE.getZalithVersionPath(versionFolder), "VersionInfo.json");
-            if (!versionInfoFile.exists()) return;
-    
-            String jsonContent = Tools.read(versionInfoFile);
-            JsonObject obj = JsonParser.parseString(jsonContent).getAsJsonObject();
-            if (!obj.has("minecraftVersion")) return;
-    
-            String minecraftVersion = obj.get("minecraftVersion").getAsString();
-            int hyphen = minecraftVersion.indexOf('-');
-            String numericPart = (hyphen != -1) ? minecraftVersion.substring(0, hyphen) : minecraftVersion;
-            String[] parts = numericPart.split("\\.");
-            if (parts.length < 2) return;
-    
-            int major = Integer.parseInt(parts[0]);
-            int minor = Integer.parseInt(parts[1]);
-    
-            if (major > 26 || (major == 26 && minor >= 2)) {
-                if (isVulkan12Supported()) {
-                    MCOptions.INSTANCE.set("preferredGraphicsBackend", "vulkan");
-                } else {
-                    MCOptions.INSTANCE.set("preferredGraphicsBackend", "opengl");
-                }
-            }
-        } catch (Throwable ignored) {}
     }
     
     /** A small interface called when the listener is ready for the first time */

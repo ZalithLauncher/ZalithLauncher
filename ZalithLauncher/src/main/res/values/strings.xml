@@ -408,6 +408,12 @@
     <string name="setting_category_experimental_patches">Experimental Patches</string>
     <string name="setting_category_support">External Support</string>
     <string name="setting_renderer_title">Renderer</string>
+    <string name="setting_game_graphics_api_title">Game Graphics API</string>
+    <string name="setting_game_graphics_api_desc">Choose how Minecraft selects its in-game graphics backend.</string>
+    <string name="setting_game_graphics_api_auto">Auto</string>
+    <string name="setting_game_graphics_api_opengl">OpenGL</string>
+    <string name="setting_game_graphics_api_vulkan">Vulkan</string>
+    <string name="setting_game_graphics_api_vulkan_unsupported">Your device does not report Vulkan 1.2+ support, so Vulkan cannot be selected.</string>
     <string name="setting_renderer_from_plugins">From %s Plugin</string>
     <string name="setting_renderer_local_import_title">Local Renderer Import</string>
     <string name="setting_renderer_local_import_desc">In addition to installing software-rendering plugins, the launcher also supports importing renderer plugins locally. However, some devices may not be able to use local renderer plugins, so use with caution!</string>
@@ -544,6 +550,17 @@
     <string name="setting_game_menu_alpha_desc">Set the opacity of the game menu floating window</string>
     <string name="setting_reboot_tip">This setting has been changed, but requires the app to be restarted to take effect!</string>
     <string name="setting_zink_driver_adreno">The launcher detected that your device has an Adreno GPU. Enabling this option may cause the Zink renderer to malfunction. Are you sure you want to enable this option?</string>
+    
+    <string-array name="setting_game_graphics_api_entries">
+        <item>@string/setting_game_graphics_api_auto</item>
+        <item>@string/setting_game_graphics_api_opengl</item>
+        <item>@string/setting_game_graphics_api_vulkan</item>
+    </string-array>
+    <string-array name="setting_game_graphics_api_values">
+        <item>auto</item>
+        <item>opengl</item>
+        <item>vulkan</item>
+    </string-array>
     <!-- Game -->
     <string name="game_exit_message">The application/game exited with code %d.</string>
     <string name="game_singnal_message">The application/game aborted due to fatal signal %d.</string>

@@ -16,7 +16,8 @@ class ListSettingsWrapper(
     val titleView: TextView,
     val valueView: TextView,
     val entries: Array<String>,
-    val entryValues: Array<String>
+    val entryValues: Array<String>,
+    val onValueSelected: ((selectedValue: String) -> Boolean)? = null
 ) : AbstractSettingsWrapper(mainView) {
 
     constructor(
@@ -30,7 +31,24 @@ class ListSettingsWrapper(
     ) : this(
         context, unit, mainView, titleView, valueView,
         context.resources.getStringArray(itemsId),
-        context.resources.getStringArray(itemValuesId)
+        context.resources.getStringArray(itemValuesId),
+        null
+    )
+
+    constructor(
+        context: Context,
+        unit: StringSettingUnit,
+        mainView: View,
+        titleView: TextView,
+        valueView: TextView,
+        itemsId: Int,
+        itemValuesId: Int,
+        onValueSelected: ((selectedValue: String) -> Boolean)?
+    ) : this(
+        context, unit, mainView, titleView, valueView,
+        context.resources.getStringArray(itemsId),
+        context.resources.getStringArray(itemValuesId),
+        onValueSelected
     )
 
     init {
@@ -45,6 +63,11 @@ class ListSettingsWrapper(
             .setSingleChoiceItems(entries, index) { dialog, which ->
                 if (which != index) {
                     val selectedValue = entryValues[which]
+                    val canSave = onValueSelected?.invoke(selectedValue) ?: true
+                    if (!canSave) {
+                        dialog.dismiss()
+                        return@setSingleChoiceItems
+                    }
                     unit.put(selectedValue).save()
                     updateListViewValue()
                     checkShowRebootDialog(context)
