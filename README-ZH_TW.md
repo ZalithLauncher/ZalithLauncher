@@ -6,9 +6,7 @@
 
 [![Android CI](https://github.com/ZalithLauncher/ZalithLauncher/actions/workflows/android.yml/badge.svg)](https://github.com/ZalithLauncher/ZalithLauncher/actions/workflows/android.yml)
 ![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher/total)
-[![Discord](https://img.shields.io/discord/1409012263423185039?label=Discord&logo=discord&color=7289DA)](https://discord.gg/yDDkTHp4cJ)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
-<!-- [![QQ](https://img.shields.io/badge/QQ-blue)](https://qm.qq.com/q/2MVxS0B29y) -->
 
 </div>
 
