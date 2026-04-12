@@ -26,6 +26,7 @@ import com.movtery.zalithlauncher.task.Task;
 import com.movtery.zalithlauncher.task.TaskExecutors;
 import com.movtery.zalithlauncher.ui.activity.BaseActivity;
 import com.movtery.zalithlauncher.ui.dialog.TipDialog;
+import com.movtery.zalithlauncher.ui.subassembly.view.FloatingLoggerWindow;
 import com.movtery.zalithlauncher.utils.NewbieGuideUtils;
 import com.movtery.zalithlauncher.utils.ZHTools;
 import com.movtery.zalithlauncher.utils.image.Dimension;
@@ -64,6 +65,8 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
 
     private boolean mIsVirtualMouseEnabled;
     private boolean mSubscribeJvmExitEvent;
+    
+    private FloatingLoggerWindow floatingLogger;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -71,6 +74,10 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         super.onCreate(savedInstanceState);
         binding = ActivityJavaGuiLauncherBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        floatingLogger = new FloatingLoggerWindow(this);
+        floatingLogger.hide();
+        binding.launcherLoggerView.setVisibility(View.GONE);
 
         try {
             File latestLogFile = new File(PathManager.DIR_GAME_HOME, "latestlog.txt");
@@ -80,6 +87,14 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         } catch (IOException e) {
             Tools.showError(this, e, true);
         }
+
+        Logger.setLogListener(text -> {
+            runOnUiThread(() -> {
+                if (floatingLogger != null) {
+                    floatingLogger.appendLog(text + "\n");
+                }
+            });
+        });
 
         // 防止系统息屏
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -174,7 +189,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             }
             mSubscribeJvmExitEvent = extras.getBoolean(SUBSCRIBE_JVM_EXIT_EVENT, false);
             if (extras.getBoolean(FORCE_SHOW_LOG, false)) {
-                binding.launcherLoggerView.forceShow(this::forceClose);
+                floatingLogger.show();
                 showLogFloodWarning();
             }
 
@@ -196,13 +211,26 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             Tools.showError(this, th, true);
         }
 
-
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                if (floatingLogger != null && floatingLogger.isVisible()) {
+                    floatingLogger.hide();
+                    return;
+                }
                 forceClose();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Logger.setLogListener(null);
+        if (floatingLogger != null) {
+            floatingLogger.hide();
+            floatingLogger = null;
+        }
     }
 
     @Subscribe()
@@ -418,7 +446,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     }
 
     public void openLogOutput(View v) {
-        binding.launcherLoggerView.setVisibilityWithAnim(true);
+        floatingLogger.toggle();
     }
 
     public void toggleVirtualMouse(View v) {
@@ -463,6 +491,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     public void toggleKeyboard(View view) {
         binding.awtTouchChar.switchKeyboardState();
     }
+
     public void performCopy(View view) {
         AWTInputBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 1);
         AWTInputBridge.sendKey(' ', AWTInputEvent.VK_C);
@@ -505,6 +534,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             return -1;
         }
     }
+
     public static int classVersionToJavaVersion(int majorVersion) {
         if(majorVersion < 46) return 2; // there isn't even an arm64 port of jre 1.1 (or anything before 1.8 in fact)
         return majorVersion - 44;
