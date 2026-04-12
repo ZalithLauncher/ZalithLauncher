@@ -44,6 +44,7 @@ import com.movtery.zalithlauncher.databinding.ViewControlMenuBinding;
 import com.movtery.zalithlauncher.databinding.ViewGameMenuBinding;
 import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
 import com.movtery.zalithlauncher.event.value.HotbarChangeEvent;
+import com.movtery.zalithlauncher.event.value.JvmExitEvent;
 import com.movtery.zalithlauncher.feature.MCOptions;
 import com.movtery.zalithlauncher.feature.ProfileLanguageSelector;
 import com.movtery.zalithlauncher.feature.background.BackgroundManager;
@@ -88,6 +89,7 @@ import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.services.GameService;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.lwjgl.glfw.CallbackBridge;
 
 import java.io.File;
@@ -514,6 +516,19 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
     }
 
+    @Subscribe
+    public void event(JvmExitEvent event) {
+        runOnUiThread(() -> {
+            GameService.setActive(false);
+            stopService(new Intent(this, GameService.class));
+            if (AllSettings.getQuitLauncher().getValue()) {
+                ZHTools.killProcess();
+            } else {
+                finish();
+            }
+        });
+    }
+    
     /*
      * Android 14 (or some devices, at least) seems to dispatch the the captured mouse events as trackball events
      * due to a bug(?) somewhere(????)
