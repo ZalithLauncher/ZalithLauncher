@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 
 import com.movtery.zalithlauncher.event.single.RefreshHotbarEvent;
 import com.movtery.zalithlauncher.feature.MCOptions;
+import com.movtery.zalithlauncher.feature.graphics.GameGraphicsApiHelper;
 import com.movtery.zalithlauncher.feature.log.Logging;
 import com.movtery.zalithlauncher.setting.AllSettings;
 import com.movtery.zalithlauncher.setting.AllStaticSettings;
@@ -52,6 +53,12 @@ import fr.spse.gamepad_remapper.RemapperView;
 public class MinecraftGLSurface extends View implements GrabListener {
     /* Gamepad object for gamepad inputs, instantiated on need */
     private Gamepad mGamepad = null;
+    
+    private static String sCurrentVersionName = null;
+
+    public static void setCurrentVersionName(String versionName) {
+        sCurrentVersionName = versionName;
+    }
     /* The RemapperView.Builder object allows you to set which buttons to remap */
     private final RemapperManager mInputManager = new RemapperManager(getContext(), new RemapperView.Builder(null)
             .remapA(true)
@@ -384,6 +391,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
         MCOptions.INSTANCE.set("fullscreen", "false");
         MCOptions.INSTANCE.set("overrideWidth", String.valueOf(windowWidth));
         MCOptions.INSTANCE.set("overrideHeight", String.valueOf(windowHeight));
+        GameGraphicsApiHelper.applyPreferredGraphicsBackend(getContext(), sCurrentVersionName);
         MCOptions.INSTANCE.save();
         MCOptions.INSTANCE.getMcScale();
 
@@ -419,7 +427,7 @@ public class MinecraftGLSurface extends View implements GrabListener {
             mLastGrabState = isGrabbing;
         }
     }
-
+    
     /** A small interface called when the listener is ready for the first time */
     public interface SurfaceReadyListener {
         void isReady();

@@ -27,13 +27,17 @@ class LaunchArgs(
     private val runtime: Runtime,
     private val launchClassPath: String
 ) {
+    private var hasClasspathInJvmArgs = false
+    
     fun getAllArgs(): List<String> {
         val argsList: MutableList<String> = ArrayList()
 
         argsList.addAll(getJavaArgs())
         argsList.addAll(getMinecraftJVMArgs())
-        argsList.add("-cp")
-        argsList.add("${Tools.getLWJGL3ClassPath()}:$launchClassPath")
+        if (!hasClasspathInJvmArgs) {
+            argsList.add("-cp")
+            argsList.add("${Tools.getLWJGL3ClassPath()}:$launchClassPath")
+        }
 
         if (runtime.javaVersion > 8) {
             argsList.add("--add-exports")
@@ -88,17 +92,38 @@ class LaunchArgs(
         varArgMap["library_directory"] = getLibrariesHome()
         varArgMap["version_name"] = versionInfo.id
         varArgMap["natives_directory"] = PathManager.DIR_NATIVE_LIB
+        varArgMap["launcher_name"] = InfoDistributor.LAUNCHER_NAME
+        varArgMap["launcher_version"] = ZHTools.getVersionName()
 
         val minecraftArgs: MutableList<String> = java.util.ArrayList()
+        hasClasspathInJvmArgs = false
         versionInfo.arguments?.let {
-            fun String.addIgnoreListIfHas(): String {
-                if (startsWith("-DignoreList=")) return "$this,$versionFileName.jar"
-                return this
+            fun Any.processJvmArg(): String? = (this as? String)?.let { argument ->
+                if (argument.startsWith("-Djava.library.path=")) {
+                    return@let "-Djava.library.path=${PathManager.DIR_NATIVE_LIB}"
+                }
+
+                when {
+                    argument.startsWith("-DignoreList=") -> {
+                        "$argument,$versionFileName.jar"
+                    }
+
+                    argument.contains("-Dio.netty.native.workdir") ||
+                        argument.contains("-Djna.tmpdir") ||
+                        argument.contains("-Dorg.lwjgl.system.SharedLibraryExtractPath") -> {
+                        argument.replace("\${natives_directory}", PathManager.DIR_CACHE.absolutePath)
+                    }
+
+                    argument == "\${classpath}" -> {
+                        hasClasspathInJvmArgs = true
+                        "${Tools.getLWJGL3ClassPath()}:$launchClassPath"
+                    }
+
+                    else -> argument
+                }
             }
             it.jvm?.forEach { arg ->
-                if (arg is String) {
-                    minecraftArgs.add(arg.addIgnoreListIfHas())
-                }
+                arg.processJvmArg()?.let(minecraftArgs::add)
             }
         }
         return JSONUtils.insertJSONValueList(minecraftArgs.toTypedArray<String>(), varArgMap)
@@ -110,6 +135,11 @@ class LaunchArgs(
         verArgMap["auth_access_token"] = account.accessToken
         verArgMap["auth_player_name"] = account.username
         verArgMap["auth_uuid"] = account.profileId.replace("-", "")
+        // Newer Minecraft versions (including snapshots like 26.2-snapshot-1)
+        // expect a resolved client id placeholder.
+        verArgMap["clientid"] = account.clientToken
+        // Keep compatibility with launch argument templates using the underscored variant.
+        verArgMap["client_id"] = account.clientToken
         verArgMap["auth_xuid"] = account.xuid
         verArgMap["assets_root"] = ProfilePathHome.getAssetsHome()
         verArgMap["assets_index_name"] = versionInfo.assets
@@ -117,7 +147,13 @@ class LaunchArgs(
         verArgMap["game_directory"] = gameDirPath.absolutePath
         verArgMap["user_properties"] = "{}"
         verArgMap["user_type"] = "msa"
-        verArgMap["version_name"] = versionInfo.inheritsFrom ?: versionInfo.id
+        val resolvedVersionName = (versionInfo.inheritsFrom ?: versionInfo.id)
+            ?.takeIf { it.isNotBlank() }
+            ?: minecraftVersion.getVersionName()
+        verArgMap["version_name"] = resolvedVersionName
+        // Compatibility aliases used by some transformers/custom argument templates.
+        verArgMap["version"] = resolvedVersionName
+        verArgMap["game_version"] = resolvedVersionName
 
         setLauncherInfo(verArgMap)
 

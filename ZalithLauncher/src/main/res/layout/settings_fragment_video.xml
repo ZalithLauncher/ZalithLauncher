@@ -67,6 +67,42 @@
             </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
 
             <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
+                android:id="@+id/game_graphics_api_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:attr/selectableItemBackground"
+                android:padding="@dimen/_12sdp">
+
+                <TextView
+                    android:id="@+id/game_graphics_api_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="@dimen/_8sdp"
+                    android:text="@string/setting_game_graphics_api_title"
+                    android:textColor="@color/black_or_white" />
+
+                <TextView
+                    android:id="@+id/game_graphics_api_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/game_graphics_api_title"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="@dimen/_8sdp"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_game_graphics_api_auto" />
+
+                <TextView
+                    android:id="@+id/game_graphics_api_desc"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/game_graphics_api_value"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:text="@string/setting_game_graphics_api_desc" />
+            </com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout>
+            
+            <com.movtery.zalithlauncher.ui.layout.AnimRelativeLayout
                 android:id="@+id/renderer_local_import_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

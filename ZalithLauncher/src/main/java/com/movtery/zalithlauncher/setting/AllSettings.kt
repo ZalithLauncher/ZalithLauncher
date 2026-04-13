@@ -18,6 +18,9 @@ class AllSettings {
 
         @JvmStatic
         val driver = StringSettingUnit("driver", "Turnip")
+        
+        @JvmStatic
+        val gameGraphicsApi = StringSettingUnit("gameGraphicsApi", "auto")
 
         @JvmStatic
         val ignoreNotch = BooleanSettingUnit("ignoreNotch", true)

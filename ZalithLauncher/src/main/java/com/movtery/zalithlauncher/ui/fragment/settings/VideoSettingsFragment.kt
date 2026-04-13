@@ -14,6 +14,7 @@ import com.movtery.anim.animations.Animations
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.databinding.SettingsFragmentVideoBinding
 import com.movtery.zalithlauncher.event.single.LauncherIgnoreNotchEvent
+import com.movtery.zalithlauncher.feature.graphics.GameGraphicsApiHelper
 import com.movtery.zalithlauncher.feature.log.Logging
 import com.movtery.zalithlauncher.plugins.driver.DriverPluginManager
 import com.movtery.zalithlauncher.plugins.renderer.RendererPluginManager
@@ -117,6 +118,30 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
             renderers.rendererIdentifier.toTypedArray()
         )
 
+        ListSettingsWrapper(
+            context,
+            AllSettings.gameGraphicsApi,
+            binding.gameGraphicsApiLayout,
+            binding.gameGraphicsApiTitle,
+            binding.gameGraphicsApiValue,
+            context.resources.getStringArray(R.array.setting_game_graphics_api_entries),
+            context.resources.getStringArray(R.array.setting_game_graphics_api_values),
+            onValueSelected = { selectedValue ->
+                if (selectedValue == GameGraphicsApiHelper.SETTING_VULKAN &&
+                    !GameGraphicsApiHelper.isVulkan12Supported(context)
+                ) {
+                    TipDialog.Builder(requireActivity())
+                        .setTitle(R.string.generic_warning)
+                        .setMessage(buildVulkanUnsupportedMessage(context))
+                        .setWarning()
+                        .showDialog()
+                    false
+                } else {
+                    true
+                }
+            }
+        )
+        
         binding.rendererDownload.setOnClickListener { ZHTools.openLink(context, UrlManager.URL_FCL_RENDERER_PLUGIN) }
 
         BaseSettingsWrapper(
@@ -256,6 +281,23 @@ class VideoSettingsFragment : AbstractSettingsFragment(R.layout.settings_fragmen
         animPlayer.apply(AnimPlayer.Entry(binding.root, Animations.BounceInDown))
     }
 
+    private fun buildVulkanUnsupportedMessage(context: android.content.Context): String {
+        val status = GameGraphicsApiHelper.getVulkanStatus(context)
+        val supportText = { supported: Boolean -> if (supported) "Supported" else "Unsupported" }
+        return buildString {
+            append(getString(R.string.setting_game_graphics_api_vulkan_unsupported))
+            append("\n\n")
+            append("Vulkan version ${status.version} ")
+            append(supportText(status.vulkan12Supported))
+            append("\n")
+            append("VK_KHR_dynamic_rendering ")
+            append(supportText(status.dynamicRenderingSupported))
+            append("\n")
+            append("VK_KHR_push_descriptor ")
+            append(supportText(status.pushDescriptorSupported))
+        }
+    }
+    
     companion object {
         @JvmStatic
         fun getResolutionRatioPreview(resources: Resources, progress: Int): String {
