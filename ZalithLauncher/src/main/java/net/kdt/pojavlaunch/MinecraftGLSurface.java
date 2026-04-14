@@ -409,15 +409,23 @@ public class MinecraftGLSurface extends View implements GrabListener {
     }
 
     private TouchEventProcessor pickEventProcessor(boolean isGrabbing) {
+        if (AllStaticSettings.forceGuiInput) {
+            return mInGUIProcessor;
+        }
         return isGrabbing ? mIngameProcessor : mInGUIProcessor;
     }
 
     private void updateGrabState(boolean isGrabbing) {
-        if(mLastGrabState != isGrabbing) {
+        TouchEventProcessor desiredProcessor = pickEventProcessor(isGrabbing);
+        if (mLastGrabState != isGrabbing || mCurrentTouchProcessor != desiredProcessor) {
             mCurrentTouchProcessor.cancelPendingActions();
-            mCurrentTouchProcessor = pickEventProcessor(isGrabbing);
+            mCurrentTouchProcessor = desiredProcessor;
             mLastGrabState = isGrabbing;
         }
+    }
+
+    public void refreshTouchProcessor() {
+        post(() -> updateGrabState(CallbackBridge.isGrabbing()));
     }
 
     /** A small interface called when the listener is ready for the first time */

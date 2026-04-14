@@ -20,6 +20,7 @@ class AllStaticSettings {
          * 禁用双击交换手中物品 Boolean
          */
         @JvmField var disableDoubleTap = AllSettings.disableDoubleTap.getValue()
+        @JvmField var forceGuiInput = AllSettings.forceGuiInput.getValue()
 
         /**
          * 触发长按延迟 Int
